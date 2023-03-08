@@ -1,0 +1,22 @@
+This is the set of equations that govern the arm. Companion file to arm.png.
+Known is X (goal angle), the magnitude of the vector from 0, 0 to the head pos
+(most of the grey line), and the length of the bars (the forearm is the same as
+the latter).
+θ (theta) = 2 * asin((magnitude/2) / arm length): The only inverse trig here
+
+θ + f + f = 180
+θ + f * 2 = 180
+f * 2 = 180 - θ
+f = (180 - θ)/2
+
+n + y = 90
+y = 90 - n
+
+n = f + x
+n = (180 - θ)/2 + x
+
+a + y = θ
+a = θ - y
+
+Ω (omega) = 270 + a
+Ω = 270 + θ - y
