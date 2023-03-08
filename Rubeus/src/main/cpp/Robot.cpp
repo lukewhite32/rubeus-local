@@ -23,7 +23,9 @@
 #include "Positionizer.hpp"
 #include "apriltags.h"
 
+const vector blue_left_ramp {12.8, -1.5};
 const vector blue_mid_ramp {12.8, -1.9};
+
 
 SwerveModule frontLeftSwerve (
 	new SparkMotor(FRONT_LEFT_SPEED),
@@ -176,6 +178,7 @@ public:
                 autoRamp();
                 break;
             case BARF_TYPE:
+                onRamp = false;
                 arm.SetGrab(BARF);
                 if (!arm.Has()) {
                     sP ++;
@@ -184,18 +187,7 @@ public:
         }
     }
 };
-MacroOp autoMacro[] {
-    {
-        DRIVE_TYPE,
-        blue_mid_ramp
-    },
-    {
-        RAMP_TYPE
-    },
-    {
-        TERMINATOR
-    }
-};
+
 frc::GenericHID buttonboard {5};
 class TeleopMode : public RobotMode {
 public:
@@ -206,11 +198,9 @@ public:
 	void Start(){
 		zeroNavx();
         compressor.EnableDigital();
-        macros = autoMacro;
 	}
 
     vector g = { 45, -5 };
-    MacroController macros {true};
 
     void armAux(){ // Arm auxiliary mode
         if (controls.GetButton(ELBOW_CONTROL)){
@@ -295,9 +285,16 @@ public:
         frc::SmartDashboard::PutNumber("Maura is a WOMAN", controls.GetOption());
 
         if (controls.GetButton(ARM_PICKUP)) { // like a woman, this code doesn't work
-            arm.goToPickup();
-            arm.SetGrab(INTAKE);
-        }
+            if (!arm.Has() || !arm.atGoal()) {
+                arm.SetGrab(INTAKE);
+                arm.goToPickup();
+            }
+            else {
+                arm.SetGrab(OFF);
+                arm.goToHome();
+            }
+
+        } 
         else if (controls.GetOption() == 1) {
             arm.goToHighPole();
         }
@@ -314,9 +311,28 @@ public:
 	}
 };
 
-
+MacroOp autoMacro[] {
+    {
+        DRIVE_TYPE,
+        blue_mid_ramp
+    },
+    {
+        RAMP_TYPE
+    },
+    {
+        TERMINATOR
+    }
+};
 
 class AutonomousMode : public RobotMode {
+    MacroController macros {true};
+public:
+    void Start(){}
+    void Synchronous() {
+        macros.Update();
+        mainSwerve.ApplySpeed();
+    }
+    /*
 	vector rotation;
 	vector translation;
 	PIDController <vector> autoRotationController { &rotation };
@@ -346,7 +362,7 @@ public:
         rotation.setAngle(PI/4); // Standard rotation.
 		mainSwerve.SetToVector(translation, rotation);
 		mainSwerve.ApplySpeed();
-	}
+	}*/
 };
 
 
