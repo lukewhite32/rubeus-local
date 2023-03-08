@@ -38,12 +38,17 @@ class Odometry {
     double orientation;
     double lastNavxHeading;
 
+    double navxDisplacementOffsetX = 0;
+    double navxDisplacementOffsetY = 0;
+
 public:
     Odometry (const char* camName) : camera { camName } {};
 
     const Position2D Update() {
         Position2D ret;
         auto dat = camera.GetLatestResult();
+        frc::SmartDashboard::PutNumber("Navx displacement x", Navx -> GetDisplacementX());
+        frc::SmartDashboard::PutNumber("Navx displacement y", Navx -> GetDisplacementY());
         if (dat.HasTargets()){
             Navx -> ResetDisplacement(); // If there's a valid target, zero the navx displacement
             photonlib::PhotonTrackedTarget targ;
@@ -79,8 +84,8 @@ public:
         else{
             ret.x = lastGoodResult.x;
             ret.y = lastGoodResult.y;
-            //ret.x += Navx -> GetDisplacementX();
-            //ret.y += Navx -> GetDisplacementY();
+            ret.x += Navx -> GetDisplacementX();
+            ret.y += Navx -> GetDisplacementY();
             isStale = true; // If it doesn't have an AprilTag, it's relying on navX odometry, and is thus stale
         }
         lastResult = ret;
