@@ -13,6 +13,8 @@ const double shoulderDefaultAngle = 80; // I calculated. At displacement x 5, di
 const double elbowDefaultAngle = 280; // Reflect the angle of the shoulder about the x axis
 // TODO: use sane units (radians).
 
+const double handCurrentHasBall = 2;
+
 enum GrabMode {
     OFF,
     INTAKE,
@@ -122,6 +124,8 @@ public:
     frc::DigitalInput elbowLimitSwitch { elbowLimitswitchID };
     frc::DigitalInput shoulderLimitSwitch { shoulderLimitswitchID };
 
+    long time = 0;
+
     Arm(BaseMotor* s, BaseMotor* e, BaseMotor* h){
         shoulder = s;
         elbow = e;
@@ -174,7 +178,7 @@ public:
 
     GrabMode grabMode;
     
-    void goToHome(bool triggerSol = false) {
+    void goToHome() {
         armGoToPos({35, 0});
     }
 
@@ -266,7 +270,7 @@ public:
         retract = s;
     }
 
-    void armPickup(bool triggerSol = true) {
+    void armPickup() {
         goToPickup();
         /*if (!retract) {
             if (!sweeping) {
@@ -338,11 +342,15 @@ public:
     }
 
     bool Has(){
-        return !boop.Get();
+        return boop.Get();
     }
 
     void SetGrab(GrabMode mode){
         grabMode = mode;
+    }
+
+    void startIntakeDeadband() {
+        time = (long)frc::Timer::GetFPGATimestamp() + 200;
     }
 
     bool shoulderAtLimit(){ // These do *not* return the state of the limit switch; they return whether or not the respective motor is at its limit. Thus they also include watchers in their math.
